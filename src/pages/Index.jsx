@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import OpenAI from "openai";
+import { toast } from "sonner";
 
 const Index = () => {
   const [apiKey, setApiKey] = useState('');
@@ -24,11 +26,30 @@ const Index = () => {
   };
 
   const handleSendPrompt = async () => {
-    // TODO: Implement OpenAI API call
+    if (!apiKey) {
+      toast.error("Please enter your OpenAI API key");
+      return;
+    }
+
     const prompt = chatMode ? chatInput : editInput;
-    console.log('Sending prompt:', prompt);
-    // For now, just update the iframe with a placeholder
-    setIframeContent(`<html><body><h1>Prompt sent: ${prompt}</h1></body></html>`);
+    const openai = new OpenAI({ apiKey: apiKey, dangerouslyAllowBrowser: true });
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "You are a helpful assistant that generates HTML content." },
+          { role: "user", content: `Generate a simple HTML page based on this prompt: ${prompt}` }
+        ],
+      });
+
+      const generatedHtml = response.choices[0].message.content;
+      setIframeContent(generatedHtml);
+      toast.success("Content generated successfully");
+    } catch (error) {
+      console.error("Error calling OpenAI API:", error);
+      toast.error("Error generating content. Please check your API key and try again.");
+    }
   };
 
   return (
