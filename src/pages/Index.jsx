@@ -44,7 +44,10 @@ const Index = () => {
       });
 
       const generatedHtml = response.choices[0].message.content;
-      setIframeContent(generatedHtml);
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(generatedHtml, 'text/html');
+      const htmlContent = doc.documentElement.innerHTML;
+      setIframeContent(htmlContent);
       toast.success("Content generated successfully");
     } catch (error) {
       console.error("Error calling OpenAI API:", error);
@@ -102,7 +105,7 @@ const Index = () => {
           <Button variant="outline">Visual Edit 🖌</Button>
         </div>
         <iframe
-          srcDoc={iframeContent}
+          srcDoc={`<html><body>${iframeContent}</body></html>`}
           title="App Preview"
           className="w-full h-[calc(100%-3rem)] border-2 border-gray-300 rounded"
         />
