@@ -73,15 +73,25 @@ const Index = () => {
         }
 
         const data = await response.json();
-        const generatedHtml = data.choices[0].message.content;
+        console.log("API Response:", data); // Log the entire response for debugging
+        
+        let generatedHtml;
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          generatedHtml = data.choices[0].message.content;
+        } else if (typeof data === 'string') {
+          generatedHtml = data;
+        } else {
+          throw new Error('Unexpected response format');
+        }
+
         const parser = new DOMParser();
         const doc = parser.parseFromString(generatedHtml, 'text/html');
         const htmlContent = doc.documentElement.innerHTML;
         setIframeContent(htmlContent);
         toast.success("Content generated successfully");
       } catch (error) {
-        console.error("Error calling provided API:", error);
-        toast.error("Error generating content. Please try again or provide an OpenAI API key.");
+        console.error("Error processing API response:", error);
+        toast.error("Error processing the generated content. Please try again.");
       }
     }
   };
