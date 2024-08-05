@@ -26,32 +26,63 @@ const Index = () => {
   };
 
   const handleSendPrompt = async () => {
-    if (!apiKey) {
-      toast.error("Please enter your OpenAI API key");
-      return;
-    }
-
     const prompt = chatMode ? chatInput : editInput;
-    const openai = new OpenAI({ apiKey: apiKey, dangerouslyAllowBrowser: true });
+    
+    if (apiKey) {
+      // Use OpenAI API
+      const openai = new OpenAI({ apiKey: apiKey, dangerouslyAllowBrowser: true });
 
-    try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: "You are a helpful assistant that generates HTML content." },
-          { role: "user", content: `Generate a simple HTML page based on this prompt: ${prompt}` }
-        ],
-      });
+      try {
+        const response = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: "You are a helpful assistant that generates HTML content." },
+            { role: "user", content: `Generate a simple HTML page based on this prompt: ${prompt}` }
+          ],
+        });
 
-      const generatedHtml = response.choices[0].message.content;
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(generatedHtml, 'text/html');
-      const htmlContent = doc.documentElement.innerHTML;
-      setIframeContent(htmlContent);
-      toast.success("Content generated successfully");
-    } catch (error) {
-      console.error("Error calling OpenAI API:", error);
-      toast.error("Error generating content. Please check your API key and try again.");
+        const generatedHtml = response.choices[0].message.content;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(generatedHtml, 'text/html');
+        const htmlContent = doc.documentElement.innerHTML;
+        setIframeContent(htmlContent);
+        toast.success("Content generated successfully");
+      } catch (error) {
+        console.error("Error calling OpenAI API:", error);
+        toast.error("Error generating content. Please check your API key and try again.");
+      }
+    } else {
+      // Use provided API endpoint
+      try {
+        const response = await fetch('https://jyltskwmiwqthebrpzxt.supabase.co/functions/v1/llm', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bHRza3dtaXdxdGhlYnJwenh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjIxNTA2NjIsImV4cCI6MjAzNzcyNjY2Mn0.a1y6NavG5JxoGJCNrAckAKMvUDaXAmd2Ny0vMvz-7Ng',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            messages: [
+              { role: "system", content: "You are a helpful assistant that generates HTML content." },
+              { role: "user", content: `Generate a simple HTML page based on this prompt: ${prompt}` }
+            ]
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        const generatedHtml = data.choices[0].message.content;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(generatedHtml, 'text/html');
+        const htmlContent = doc.documentElement.innerHTML;
+        setIframeContent(htmlContent);
+        toast.success("Content generated successfully");
+      } catch (error) {
+        console.error("Error calling provided API:", error);
+        toast.error("Error generating content. Please try again or provide an OpenAI API key.");
+      }
     }
   };
 
