@@ -80,18 +80,26 @@ const Index = () => {
           generatedHtml = data.choices[0].message.content;
         } else if (typeof data === 'string') {
           generatedHtml = data;
+        } else if (data.content) {
+          generatedHtml = data.content;
         } else {
+          console.error("Unexpected response format:", data);
           throw new Error('Unexpected response format');
+        }
+
+        // Ensure the generated HTML is wrapped in proper HTML tags
+        if (!generatedHtml.trim().startsWith('<')) {
+          generatedHtml = `<div>${generatedHtml}</div>`;
         }
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(generatedHtml, 'text/html');
-        const htmlContent = doc.documentElement.innerHTML;
+        const htmlContent = doc.body.innerHTML; // Use body.innerHTML instead of documentElement.innerHTML
         setIframeContent(htmlContent);
         toast.success("Content generated successfully");
       } catch (error) {
         console.error("Error processing API response:", error);
-        toast.error("Error processing the generated content. Please try again.");
+        toast.error(`Error: ${error.message}. Please try again.`);
       }
     }
   };
