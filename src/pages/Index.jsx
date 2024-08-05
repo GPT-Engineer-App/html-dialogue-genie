@@ -87,18 +87,15 @@ const Index = () => {
           throw new Error('Unexpected response format');
         }
 
-        // Ensure generatedHtml is a string
-        generatedHtml = String(generatedHtml);
+        // Ensure generatedHtml is a string and remove any surrounding backticks
+        generatedHtml = String(generatedHtml).replace(/^```html\s*|\s*```$/g, '');
 
         // Ensure the generated HTML is wrapped in proper HTML tags
-        if (!generatedHtml.trim().startsWith('<')) {
-          generatedHtml = `<div>${generatedHtml}</div>`;
+        if (!generatedHtml.trim().toLowerCase().startsWith('<html')) {
+          generatedHtml = `<html><body>${generatedHtml}</body></html>`;
         }
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(generatedHtml, 'text/html');
-        const htmlContent = doc.body.innerHTML;
-        setIframeContent(htmlContent);
+        setIframeContent(generatedHtml);
         toast.success("Content generated successfully");
       } catch (error) {
         console.error("Error processing API response:", error);
@@ -157,9 +154,10 @@ const Index = () => {
           <Button variant="outline">Visual Edit 🖌</Button>
         </div>
         <iframe
-          srcDoc={`<html><body>${iframeContent}</body></html>`}
+          srcDoc={iframeContent}
           title="App Preview"
           className="w-full h-[calc(100%-3rem)] border-2 border-gray-300 rounded"
+          sandbox="allow-scripts"
         />
       </div>
     </div>
