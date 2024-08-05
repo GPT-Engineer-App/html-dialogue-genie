@@ -75,7 +75,7 @@ const Index = () => {
         const data = await response.json();
         console.log("API Response:", data); // Log the entire response for debugging
         
-        let generatedHtml;
+        let generatedHtml = '';
         if (data.choices && data.choices[0] && data.choices[0].message) {
           generatedHtml = data.choices[0].message.content;
         } else if (typeof data === 'string') {
@@ -87,6 +87,9 @@ const Index = () => {
           throw new Error('Unexpected response format');
         }
 
+        // Ensure generatedHtml is a string
+        generatedHtml = String(generatedHtml);
+
         // Ensure the generated HTML is wrapped in proper HTML tags
         if (!generatedHtml.trim().startsWith('<')) {
           generatedHtml = `<div>${generatedHtml}</div>`;
@@ -94,7 +97,7 @@ const Index = () => {
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(generatedHtml, 'text/html');
-        const htmlContent = doc.body.innerHTML; // Use body.innerHTML instead of documentElement.innerHTML
+        const htmlContent = doc.body.innerHTML;
         setIframeContent(htmlContent);
         toast.success("Content generated successfully");
       } catch (error) {
