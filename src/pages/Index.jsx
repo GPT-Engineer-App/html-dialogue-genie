@@ -82,6 +82,8 @@ const Index = () => {
           generatedHtml = data;
         } else if (data.content) {
           generatedHtml = data.content;
+        } else if (typeof data === 'object') {
+          generatedHtml = JSON.stringify(data, null, 2);
         } else {
           console.error("Unexpected response format:", data);
           throw new Error('Unexpected response format');
@@ -92,7 +94,7 @@ const Index = () => {
 
         // Ensure the generated HTML is wrapped in proper HTML tags
         if (!generatedHtml.trim().toLowerCase().startsWith('<html')) {
-          generatedHtml = `<html><body>${generatedHtml}</body></html>`;
+          generatedHtml = `<html><body><pre>${generatedHtml}</pre></body></html>`;
         }
 
         console.log("Generated HTML:", generatedHtml); // Log the final HTML for debugging
