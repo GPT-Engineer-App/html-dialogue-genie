@@ -95,6 +95,7 @@ const Index = () => {
           generatedHtml = `<html><body>${generatedHtml}</body></html>`;
         }
 
+        console.log("Generated HTML:", generatedHtml); // Log the final HTML for debugging
         setIframeContent(generatedHtml);
         toast.success("Content generated successfully");
       } catch (error) {
